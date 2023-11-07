@@ -11,6 +11,11 @@ import (
 
 type Utility interface {
 	GetRandomArticle() models.Article
+	RandomAuthor() string
+	RandomTitle() string
+	RandomContent() string
+	Random(min int, max int) int
+	GetUUID() string
 }
 
 func GetRandomArticle() models.Article {
