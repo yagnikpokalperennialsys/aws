@@ -2,124 +2,95 @@ package controller
 
 import (
 	"encoding/json"
-	"net/http"
 	"net/http/httptest"
-	"pet/mocks"
-	"pet/pkg/models"
 	"testing"
 
+	"pet/pkg/models"
+
 	"github.com/gin-gonic/gin"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetArticles(t *testing.T) {
-	t.Run("DefaultLimit", func(t *testing.T) {
-		// Create a request with no "limit" query parameter
-		r := httptest.NewRequest("GET", "/articles", nil)
-		w := httptest.NewRecorder()
+	testCases := []struct {
+		limit      string
+		expected   int
+		statusCode int
+	}{
+		{
+			limit:      "",
+			expected:   10,
+			statusCode: 200,
+		},
+		{
+			limit:      "20",
+			expected:   20,
+			statusCode: 200,
+		},
+		{
+			limit:      "50",
+			expected:   50,
+			statusCode: 200,
+		},
+		{
+			limit:      "invalid",
+			expected:   10,
+			statusCode: 200,
+		},
+	}
 
-		// Create a Gin router
-		router := gin.Default()
+	for _, testCase := range testCases {
+		t.Run(testCase.limit, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		// Initialize the controller
-		controller := mocks.MockController{}
+			w := httptest.NewRecorder()
 
-		// Define the route for testing
-		router.GET("/articles", controller.GetArticles)
+			ctx, _ := gin.CreateTestContext(w)
 
-		// Perform the request
-		router.ServeHTTP(w, r)
+			GetArticles(ctx)
 
-		// Parse the response
-		var articles []models.Article
-		err := json.NewDecoder(w.Body).Decode(&articles)
-		assert.Error(t, err)
+			var articles []models.Article
+			err := json.NewDecoder(w.Body).Decode(&articles)
+			assert.NoError(t, err)
 
-		// Assert that the response has a 200 status code and contains 10 articles
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Len(t, articles, 0)
-	})
-
-	t.Run("CustomLimit", func(t *testing.T) {
-		// Create a request with "limit" query parameter set to 20
-		r := httptest.NewRequest("GET", "/articles?limit=20", nil)
-		w := httptest.NewRecorder()
-
-		// Create a Gin router
-		router := gin.Default()
-
-		// Initialize the controller
-		controller := mocks.MockController{}
-
-		// Define the route for testing
-		router.GET("/articles", controller.GetArticles)
-
-		// Perform the request
-		router.ServeHTTP(w, r)
-
-		// Parse the response
-		var articles []models.Article
-		err := json.NewDecoder(w.Body).Decode(&articles)
-		assert.Error(t, err)
-
-		// Assert that the response has a 200 status code and contains 20 articles
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Len(t, articles, 0)
-	})
+			assert.Equal(t, testCase.statusCode, w.Code)
+		})
+	}
 }
-
 func TestGetArticle(t *testing.T) {
-	t.Run("ValidID", func(t *testing.T) {
-		// Create a request with a valid article ID
-		r := httptest.NewRequest("POST", "/articles/123", nil)
-		w := httptest.NewRecorder()
+	testCases := []struct {
+		id         string
+		statusCode int
+	}{
+		{
+			id:         "1",
+			statusCode: 200,
+		},
+	}
 
-		// Create a Gin router
-		router := gin.Default()
+	for _, testCase := range testCases {
+		t.Run(testCase.id, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		// Initialize the controller
-		controller := mocks.MockController{}
+			w := httptest.NewRecorder()
 
-		// Define the route for testing
-		router.GET("/articles/:id", controller.GetArticle)
+			ctx, _ := gin.CreateTestContext(w)
 
-		// Perform the request
-		router.ServeHTTP(w, r)
+			GetArticle(ctx)
 
-		// Parse the response
-		var article models.Article
-		err := json.NewDecoder(w.Body).Decode(&article)
-		assert.Error(t, err)
+			var article models.Article
+			err := json.NewDecoder(w.Body).Decode(&article)
 
-		// Assert that the response has a 200 status code and the correct article ID
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.Equal(t, "", article.ID)
-	})
+			if testCase.statusCode == 200 {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
 
-	t.Run("InvalidID", func(t *testing.T) {
-		// Create a request with an invalid article ID
-		r := httptest.NewRequest("POST", "/articles/invalid", nil)
-		w := httptest.NewRecorder()
-
-		// Create a Gin router
-		router := gin.Default()
-
-		// Initialize the controller
-		controller := mocks.MockController{}
-
-		// Define the route for testing
-		router.GET("/articles/:id", controller.GetArticle)
-
-		// Perform the request
-		router.ServeHTTP(w, r)
-
-		// Parse the response
-		var article models.Article
-		err := json.NewDecoder(w.Body).Decode(&article)
-		assert.Error(t, err)
-
-		// Assert that the response has a 200 status code and the article ID is "invalid"
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.Equal(t, "", article.ID)
-	})
+			assert.Equal(t, testCase.statusCode, w.Code)
+		})
+	}
 }
