@@ -16,6 +16,7 @@ To checkout visibility timeout
 Visibility timeout means the amount of time queue will give to consumer to consume and delete the message.
 How to test it?
 Set visibility timeout of 10 second
+
 ![img.png](img.png)
 
 Send 1st message at 13:49:00

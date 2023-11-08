@@ -26,8 +26,8 @@ func MyHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 	for _, message := range sqsEvent.Records {
 		logger.Info("received sqs event", zap.Any("message", message))
 
-		// Sleep for 3 seconds
-		time.Sleep(3 * time.Second)
+		// Sleep for 13 seconds
+		time.Sleep(13 * time.Second)
 
 		// Decode JSON
 		event := &Event{}
