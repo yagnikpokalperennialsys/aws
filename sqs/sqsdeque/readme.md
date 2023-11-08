@@ -64,9 +64,9 @@ aws lambda create-function \
 ---
 Referance
 ---
-https://github.com/awslabs/aws-lambda-go-api-proxy/tree/master/sample
+https://github.com/devtopics-yt/lambda-publish-sns-sqs
 
-https://github.com/yagnikpokalperennialsys/blogsystem
+https://docs.aws.amazon.com/lambda/latest/dg/with-sqs-create-package.html
 
 ---
 

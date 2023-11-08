@@ -71,7 +71,6 @@ aws lambda update-function-code \
 ```
 Referance
 ---
-https://www.youtube.com/watch?v=snqWw0C9Zbs
 https://github.com/devtopics-yt/aws-lambda-sqs
 
 ---

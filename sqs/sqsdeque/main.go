@@ -41,7 +41,7 @@ func MyHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 		logger.Info("decoded event", zap.Any("event", event))
 
-		// Delete the message from the SQS queue
+		// Delete the message from the SQS queue refer https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/step-receive-delete-message.html
 		_, err = sqsSvc.DeleteMessage(&sqs.DeleteMessageInput{
 			QueueUrl:      aws.String("https://sqs.eu-central-1.amazonaws.com/996985152674/article"), // Replace with your SQS queue URL
 			ReceiptHandle: aws.String(message.ReceiptHandle),

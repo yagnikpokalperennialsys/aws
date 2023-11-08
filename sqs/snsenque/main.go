@@ -12,8 +12,7 @@ import (
 var logger *zap.Logger
 
 func init() {
-	l, _ := zap.NewProduction()
-	logger = l
+	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
 }
 
