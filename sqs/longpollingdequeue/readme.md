@@ -1,5 +1,3 @@
-
-
 To generate the the arm 64 binary
 ---
 ```
@@ -12,5 +10,9 @@ To make the zip file
 ```
 zip main.zip ./main
 ```
-Receive 2 messages of last 10 seconds
-![img_1.png](img_1.png)
+Receive 2 messages in single lambda call
+- Lambda max wait time 15 sec
+- Visibility time 10 sec
+- Polling limit time 15 sec
+
+![Alt text](image-1.png)

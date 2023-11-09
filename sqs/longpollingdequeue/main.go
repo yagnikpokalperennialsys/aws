@@ -2,76 +2,59 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"log"
 
-	"github.com/aws/aws-lambda-go/events"
+	"time"
+
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"go.uber.org/zap"
 )
 
-var logger *zap.Logger
-
-func init() {
-	l, _ := zap.NewProduction()
-	logger = l
-	defer logger.Sync() // flushes buffer, if any
-}
-
-type Event struct {
-	Name string `json:"name"`
-}
-
-func MyHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
-	// Create a session and SQS client
+func MyHandler(ctx context.Context) error {
+	// Create an AWS session and SQS client
 	sess := session.Must(session.NewSession())
 	sqsSvc := sqs.New(sess)
 
 	// Set the visibility timeout to 10 seconds
 	visibilityTimeout := int64(10)
 
-	for _, message := range sqsEvent.Records {
-		logger.Info("received sqs event", zap.Any("message", message))
+	// Define the time limit for polling (e.g., 15 seconds)
+	startTime := time.Now()
+	timeLimit := 15 * time.Second
 
-		// Receive messages with long-polling and 10-second visibility timeout
+	for {
+		// Check if the time limit has been reached
+		if time.Since(startTime) >= timeLimit {
+			break
+		}
+
+		// Receive messages with long-polling
 		receiveParams := &sqs.ReceiveMessageInput{
-			QueueUrl:            aws.String("https://sqs.eu-central-1.amazonaws.com/996985152674/article"), // Replace with your SQS queue URL
-			WaitTimeSeconds:     aws.Int64(10),                                                             // 10-second long-polling
+			QueueUrl:            aws.String("https://sqs.eu-central-1.amazonaws.com/996985152674/article"),
+			WaitTimeSeconds:     aws.Int64(10),
 			VisibilityTimeout:   aws.Int64(visibilityTimeout),
-			MaxNumberOfMessages: aws.Int64(1), // Process one message at a time
+			MaxNumberOfMessages: aws.Int64(10), // Adjust the number of messages to receive
 		}
 
 		result, err := sqsSvc.ReceiveMessage(receiveParams)
 		if err != nil {
-			logger.Error("failed to receive message with long-polling", zap.Error(err))
 			return err
 		}
 
-		if len(result.Messages) > 0 {
-			// Decode JSON
-			event := &Event{}
-			body := []byte(*result.Messages[0].Body)
-			err := json.Unmarshal(body, event)
-			if err != nil {
-				logger.Error("failed to decode message", zap.Error(err))
-				return err
-			}
-
-			logger.Info("decoded event", zap.Any("event", event))
+		for _, message := range result.Messages {
+			log.Printf("Processing message: %s", message.Body)
 
 			// Delete the message from the SQS queue
-			_, err = sqsSvc.DeleteMessage(&sqs.DeleteMessageInput{
-				QueueUrl:      aws.String("https://sqs.eu-central-1.amazonaws.com/996985152674/article"), // Replace with your SQS queue URL
-				ReceiptHandle: result.Messages[0].ReceiptHandle,
+			_, err := sqsSvc.DeleteMessage(&sqs.DeleteMessageInput{
+				QueueUrl:      aws.String("https://sqs.eu-central-1.amazonaws.com/996985152674/article"),
+				ReceiptHandle: message.ReceiptHandle,
 			})
 
 			if err != nil {
-				logger.Error("failed to delete message", zap.Error(err))
+				log.Printf("Failed to delete message: %v", err)
 			}
-		} else {
-			logger.Info("No messages received during long-polling")
 		}
 	}
 
