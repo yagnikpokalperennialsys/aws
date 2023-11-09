@@ -33,7 +33,7 @@ func MyHandler(ctx context.Context) error {
 		// Receive messages with long-polling
 		receiveParams := &sqs.ReceiveMessageInput{
 			QueueUrl:            aws.String("https://sqs.eu-central-1.amazonaws.com/996985152674/article"),
-			WaitTimeSeconds:     aws.Int64(10),
+			WaitTimeSeconds:     aws.Int64(10), // This time must be less then loop time
 			VisibilityTimeout:   aws.Int64(visibilityTimeout),
 			MaxNumberOfMessages: aws.Int64(10), // Adjust the number of messages to receive
 		}
