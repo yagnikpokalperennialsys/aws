@@ -10,9 +10,11 @@ To make the zip file
 zip main.zip ./main
 ```
 Create a queue
+
 ![img.png](img.png)
 
 Create a deadletter queue
+
 ![img_1.png](img_1.png)
 
 Update main queue with deadletter queue with 3 retry
