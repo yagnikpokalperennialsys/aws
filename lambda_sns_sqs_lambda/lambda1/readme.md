@@ -13,4 +13,5 @@ Add the permission policy to send message from lambda to SNS
 ![img_1.png](img_1.png)
 
 Send a message from lambda 1
+
 ![img.png](img.png)
